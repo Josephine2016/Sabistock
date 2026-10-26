@@ -19,7 +19,7 @@ Build mode: fast
   Learner check: Open the dashboard, add a named item, use Sold -1 and Add +1, and reload the page. Confirm the item appears in the expected bucket with its updated quantity still saved.
   Commit: `Build saved stock dashboard`
 
-- [ ] **2. You can find items and recover from empty or invalid input**
+- [x] **2. You can find items and recover from empty or invalid input**
   Becomes usable: Search filters inventory by item name; the no-items, no-search-results, and invalid-input states explain what to do next.
   Why now: Once the core dashboard and saved items work, search and clear recovery make it practical to use the inventory. Validation protects saved data while preserving the learner-approved blank-quantity-as-zero behavior.
   PRD ref: `prd.md > Features and Behavior > Search`, `prd.md > Features and Behavior > Add an item`, `prd.md > States and Boundaries`
