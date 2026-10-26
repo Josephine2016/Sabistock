@@ -9,7 +9,7 @@ Build mode: fast
 
 ## Slices
 
-- [ ] **1. You can see and update a saved restock dashboard**
+- [x] **1. You can see and update a saved restock dashboard**
   Becomes usable: SabiStock runs locally; the owner can add an item with a name and whole-number quantity, see it in the correct urgency bucket, and tap Sold -1 or Add +1 to update stock. Items remain after a reload.
   Why now: This puts the unique kernel—the prioritized Low Stock list and live quantity updates—into the first working slice. Adding and changing an item exercise the full page-to-storage path while keeping the project usable.
   PRD ref: `prd.md > The Core Journey`, `prd.md > Screens and Layout`, `prd.md > Features and Behavior > Stock dashboard and item updates`

@@ -27,6 +27,7 @@
     }
 
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
 
     body {
       min-width: 320px;
@@ -92,6 +93,34 @@
     }
 
     .summary strong { font-size: 22px; }
+
+    .search-row {
+      display: flex;
+      gap: 9px;
+      margin-bottom: 4px;
+    }
+
+    .search-row input {
+      width: 100%;
+      min-height: 48px;
+      padding: 11px 14px;
+      border: 1px solid #ced7e0;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .search-row input:focus {
+      border-color: #5196d2;
+      box-shadow: 0 0 0 3px rgb(23 105 170 / 12%);
+    }
+
+    .button-clear {
+      flex: 0 0 auto;
+      background: #edf2f6;
+      color: #334656;
+    }
 
     .panel {
       margin-bottom: 18px;
@@ -301,6 +330,15 @@
 
     .empty-state .icon { font-size: 30px; }
     .empty-state p { margin: 8px 0 0; }
+    .empty-state .button { margin-top: 14px; }
+    .no-results {
+      padding: 24px 16px;
+      border: 1px dashed #d7e0e9;
+      border-radius: 15px;
+      color: #647381;
+      text-align: center;
+    }
+    .no-results p { margin: 0 0 12px; font-size: 15px; }
 
     .storage-warning {
       margin-bottom: 15px;
@@ -366,7 +404,7 @@
         </div>
         <div class="field">
           <label for="item-quantity">Quantity</label>
-          <input id="item-quantity" name="quantity" type="number" min="0" step="1" placeholder="0" inputmode="numeric">
+          <input id="item-quantity" name="quantity" type="text" inputmode="decimal" placeholder="0" autocomplete="off">
         </div>
         <button id="save-item" class="button button-primary" type="submit">＋ Add Item</button>
       </form>
@@ -374,6 +412,11 @@
     </section>
 
     <section class="panel" aria-label="Stock dashboard">
+      <div id="search-row" class="search-row">
+        <label class="sr-only" for="inventory-search">Find item</label>
+        <input id="inventory-search" type="search" placeholder="Find item..." autocomplete="off">
+        <button id="clear-search" class="button button-clear" type="button" hidden>Clear Search</button>
+      </div>
       <div id="dashboard"></div>
     </section>
   </main>
@@ -389,10 +432,14 @@
       const quantityInput = document.querySelector("#item-quantity");
       const formMessage = document.querySelector("#form-message");
       const dashboard = document.querySelector("#dashboard");
+      const searchRow = document.querySelector("#search-row");
+      const searchInput = document.querySelector("#inventory-search");
+      const clearSearchButton = document.querySelector("#clear-search");
       const restockSummary = document.querySelector("#restock-summary");
       const storageWarning = document.querySelector("#storage-warning");
       const saveButton = document.querySelector("#save-item");
       let storageAvailable = true;
+      let inventoryLoadFailed = false;
 
       function showStorageError(message) {
         storageAvailable = false;
@@ -421,6 +468,7 @@
           inventory.push(...parsed);
         } catch (error) {
           console.error("Could not load saved inventory:", error);
+          inventoryLoadFailed = true;
           showStorageError("Saved inventory could not be read. Your browser data has not been changed. Please keep this page open and get help before clearing browser data.");
         }
       }
@@ -503,27 +551,55 @@
       }
 
       function render() {
-        const lowStock = inventory
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        const visibleItems = inventory.filter((item) => item.name.toLocaleLowerCase().includes(query));
+        const lowStock = visibleItems
           .filter((item) => item.quantity < 5)
           .sort((a, b) => a.quantity - b.quantity || a.name.localeCompare(b.name));
-        const outSoon = inventory
+        const outSoon = visibleItems
           .filter((item) => item.quantity >= 5 && item.quantity < 10)
           .sort((a, b) => a.quantity - b.quantity || a.name.localeCompare(b.name));
-        const safe = inventory
+        const safe = visibleItems
           .filter((item) => item.quantity >= 10)
           .sort((a, b) => a.name.localeCompare(b.name));
 
-        restockSummary.replaceChildren(
-          document.createTextNode("Need to restock: "),
-          makeElement("strong", "", String(lowStock.length)),
-          document.createTextNode(` ${lowStock.length === 1 ? "item" : "items"}`)
-        );
+        if (inventoryLoadFailed) {
+          restockSummary.textContent = "Inventory unavailable";
+        } else {
+          const totalLowStock = inventory.filter((item) => item.quantity < 5).length;
+          restockSummary.replaceChildren(
+            document.createTextNode("Need to restock: "),
+            makeElement("strong", "", String(totalLowStock)),
+            document.createTextNode(` ${totalLowStock === 1 ? "item" : "items"}`)
+          );
+        }
         dashboard.replaceChildren();
+        searchRow.hidden = inventory.length === 0 || inventoryLoadFailed;
+        clearSearchButton.hidden = searchInput.value.length === 0;
+        if (inventoryLoadFailed) {
+          dashboard.append(makeElement("div", "empty-state", "Saved inventory could not be shown. Your browser data has not been changed."));
+          return;
+        }
         if (inventory.length === 0) {
           const empty = makeElement("div", "empty-state");
           empty.append(makeElement("div", "icon", "📦"));
-          empty.append(makeElement("p", "", "No items tracked yet. Add your first item above to start."));
+          empty.append(makeElement("p", "", "No items yet. Tap + Add Item to start tracking your stock"));
+          const addFirstButton = makeElement("button", "button button-primary", "＋ Add Item");
+          addFirstButton.type = "button";
+          addFirstButton.addEventListener("click", () => nameInput.focus());
+          empty.append(addFirstButton);
           dashboard.append(empty);
+          return;
+        }
+
+        if (visibleItems.length === 0) {
+          const noResults = makeElement("div", "no-results");
+          noResults.append(makeElement("p", "", `No results for ${searchInput.value.trim()}`));
+          const resetSearch = makeElement("button", "button button-clear", "Clear Search");
+          resetSearch.type = "button";
+          resetSearch.addEventListener("click", clearSearch);
+          noResults.append(resetSearch);
+          dashboard.append(noResults);
           return;
         }
 
@@ -545,15 +621,46 @@
         render();
       }
 
+      function clearSearch() {
+        searchInput.value = "";
+        render();
+        searchInput.focus();
+      }
+
+      searchInput.addEventListener("input", render);
+      clearSearchButton.addEventListener("click", clearSearch);
+
+      nameInput.addEventListener("input", () => {
+        formMessage.textContent = "";
+        formMessage.className = "message";
+      });
+      quantityInput.addEventListener("input", () => {
+        formMessage.textContent = "";
+        formMessage.className = "message";
+      });
+
       form.addEventListener("submit", (event) => {
         event.preventDefault();
         if (!storageAvailable) return;
         const name = nameInput.value.trim();
         const quantityText = quantityInput.value.trim();
-        const quantity = quantityText === "" ? 0 : Number(quantityText);
-        if (!name || !Number.isInteger(quantity) || quantity < 0) {
-          formMessage.textContent = "Enter an item name and a whole-number quantity of 0 or more.";
+        if (!name) {
+          formMessage.textContent = "Enter item name";
           formMessage.className = "message error";
+          nameInput.focus();
+          return;
+        }
+        if (quantityText !== "" && !/^\d+$/.test(quantityText)) {
+          formMessage.textContent = "Enter whole number 0 or more";
+          formMessage.className = "message error";
+          quantityInput.focus();
+          return;
+        }
+        const quantity = quantityText === "" ? 0 : Number(quantityText);
+        if (!Number.isSafeInteger(quantity)) {
+          formMessage.textContent = "Enter whole number 0 or more";
+          formMessage.className = "message error";
+          quantityInput.focus();
           return;
         }
 
