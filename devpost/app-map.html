@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>SabiStock — App Map</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: #17212b;
+      background: #f4f7fa;
+      line-height: 1.55;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { width: min(100% - 32px, 900px); margin: 0 auto; padding: 34px 0 56px; }
+    h1, h2, h3 { line-height: 1.2; letter-spacing: -.025em; }
+    h1 { margin: 0; font-size: clamp(2rem, 6vw, 3rem); }
+    h2 { margin: 30px 0 12px; font-size: 1.35rem; }
+    h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    p { margin: 8px 0 0; }
+    a { color: #075f9f; text-underline-offset: 3px; }
+    a:focus-visible, summary:focus-visible { outline: 3px solid #347eb5; outline-offset: 3px; border-radius: 4px; }
+    code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: #edf1f5;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: .92em;
+      overflow-wrap: anywhere;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #1769aa;
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .intro, .panel {
+      padding: 22px;
+      border: 1px solid #dfe6ed;
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 5px 20px rgb(27 47 66 / 4%);
+    }
+
+    .intro { margin-top: 20px; }
+    .muted { color: #536473; }
+    .diagram-wrap { margin-top: 16px; overflow-x: auto; }
+    .diagram { display: block; width: 100%; min-width: 680px; height: auto; }
+    .diagram .node { fill: #fff; stroke: #9cb0c0; stroke-width: 2; }
+    .diagram .input { fill: #eaf4fc; stroke: #4388b8; }
+    .diagram .logic { fill: #fff7df; stroke: #b47d0b; }
+    .diagram .storage { fill: #eaf7ef; stroke: #34845c; }
+    .diagram .result { fill: #fff0ef; stroke: #c3544f; }
+    .diagram .edge { fill: none; stroke: #526779; stroke-width: 2.4; }
+    .diagram text { fill: #17212b; font-family: "Segoe UI", Arial, sans-serif; }
+    .diagram .node-title { font-size: 17px; font-weight: 750; }
+    .diagram .node-copy { font-size: 13px; }
+    .diagram .arrow-label { fill: #536473; font-size: 12px; }
+
+    .steps { display: grid; gap: 12px; margin: 16px 0 0; padding: 0; list-style: none; counter-reset: route; }
+    .steps li {
+      display: grid;
+      grid-template-columns: 35px minmax(0, 1fr);
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid #e2e8ee;
+      border-radius: 14px;
+      background: #fff;
+      counter-increment: route;
+    }
+    .steps li::before {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border-radius: 50%;
+      background: #e8f2fb;
+      color: #155c91;
+      content: counter(route);
+      font-weight: 800;
+    }
+    .pointer-list { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+    .pointer-list li { padding: 13px 15px; border-left: 4px solid #78a8ca; border-radius: 5px 12px 12px 5px; background: #fff; }
+    .practice { border-color: #bddbc9; background: #f1f8f3; }
+    .run { border-color: #c8d9e8; background: #eff6fb; }
+    details { margin-top: 12px; }
+    summary { cursor: pointer; font-weight: 750; }
+    footer { margin-top: 24px; color: #596a77; font-size: .9rem; }
+    @media (max-width: 600px) {
+      main { width: min(100% - 22px, 900px); padding-top: 20px; }
+      .intro, .panel { padding: 17px; }
+      .steps li { grid-template-columns: 30px minmax(0, 1fr); gap: 9px; padding: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Project guide</p>
+      <h1>SabiStock App Map</h1>
+      <p class="muted">A compact guide to the restock dashboard, its photo flow, and where to start when changing it.</p>
+    </header>
+
+    <section class="intro" aria-labelledby="overview-title">
+      <h2 id="overview-title">What the app does</h2>
+      <p>SabiStock helps a small phone or computer-accessory shop see what needs restocking. It groups items by quantity, keeps the lowest stock first, and saves the owner’s inventory in this browser.</p>
+      <div class="diagram-wrap">
+        <svg class="diagram" viewBox="0 0 960 250" role="img" aria-labelledby="flow-title flow-description">
+          <title id="flow-title">Photo-to-inventory flow</title>
+          <desc id="flow-description">Choosing a photo sends it through compression, the item is saved in browser storage, and the dashboard renders its thumbnail.</desc>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#526779"></path>
+            </marker>
+          </defs>
+          <path class="edge" d="M205 116 H255" marker-end="url(#arrow)"></path>
+          <path class="edge" d="M435 116 H485" marker-end="url(#arrow)"></path>
+          <path class="edge" d="M665 116 H715" marker-end="url(#arrow)"></path>
+          <text class="arrow-label" x="229" y="101" text-anchor="middle">select</text>
+          <text class="arrow-label" x="459" y="101" text-anchor="middle">save item</text>
+          <text class="arrow-label" x="689" y="101" text-anchor="middle">load / draw</text>
+          <rect class="node input" x="25" y="70" width="180" height="92" rx="16"></rect>
+          <text class="node-title" x="115" y="105" text-anchor="middle">Photo picker</text>
+          <text class="node-copy" x="115" y="130" text-anchor="middle">camera or gallery</text>
+          <rect class="node logic" x="255" y="70" width="180" height="92" rx="16"></rect>
+          <text class="node-title" x="345" y="105" text-anchor="middle">compressPhoto</text>
+          <text class="node-copy" x="345" y="130" text-anchor="middle">≤300 × 300 · JPEG · ≤20 KB</text>
+          <rect class="node storage" x="485" y="70" width="180" height="92" rx="16"></rect>
+          <text class="node-title" x="575" y="105" text-anchor="middle">localStorage</text>
+          <text class="node-copy" x="575" y="130" text-anchor="middle">sabistock_items</text>
+          <rect class="node result" x="715" y="70" width="220" height="92" rx="16"></rect>
+          <text class="node-title" x="825" y="105" text-anchor="middle">Dashboard card</text>
+          <text class="node-copy" x="825" y="130" text-anchor="middle">saved item + thumbnail</text>
+          <text class="arrow-label" x="480" y="207" text-anchor="middle">After reload, the browser reads the same saved inventory and draws it again.</text>
+        </svg>
+      </div>
+      <p class="muted">The app has no backend or online libraries. Inventory stays in the same browser and device; use the local server for a reliable saved-inventory demo.</p>
+    </section>
+
+    <section aria-labelledby="route-title">
+      <h2 id="route-title">Reference route through the code</h2>
+      <p class="muted">This is a route for revisiting the code, not a claim that every reader has completed it.</p>
+      <ol class="steps">
+        <li>
+          <div>
+            <h3>Photo selection and preview</h3>
+            <p>In <code>index.html</code>, search for <code>photoInput.addEventListener("change"</code>. It passes the chosen file into the photo-preparation step and shows the compressed preview.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Resize and compress</h3>
+            <p>Search for <code>async function compressPhoto</code>. The canvas preserves the image proportions within 300 × 300 pixels and tries JPEG quality settings until the image data is at most 20 KB.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Save and display</h3>
+            <p>Search for <code>form.addEventListener("submit"</code> and <code>function saveInventory</code>. The new item's photo is set from <code>pendingPhoto</code>, serialized under <code>sabistock_items</code>, and then displayed by <code>render</code> and <code>itemCard</code>.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="change-title">
+      <h2 id="change-title">To change this, start here</h2>
+      <ul class="pointer-list">
+        <li><strong>Stock thresholds and bucket order:</strong> <code>function render</code> in <code>index.html</code>.</li>
+        <li><strong>Card details and Sold/Add actions:</strong> <code>function itemCard</code> in <code>index.html</code>.</li>
+        <li><strong>Name and quantity checks:</strong> the form submit handler in <code>index.html</code>.</li>
+        <li><strong>Photo size, compression, and preview:</strong> <code>compressPhoto</code> and the photo input change handler in <code>index.html</code>.</li>
+      </ul>
+    </section>
+
+    <section class="panel practice" aria-labelledby="practice-title">
+      <h2 id="practice-title">A practice to reuse</h2>
+      <p>Turn a vague quality goal into an observable check. Here, the photo requirement became a 300 × 300 maximum and a JPEG image-data limit of 20 KB; the browser check confirmed a 300 × 150 thumbnail at 2,011 bytes that remained after reload. In another project, connect a measurable requirement to the output you can inspect, then test it after the relevant action.</p>
+      <details>
+        <summary>What evidence was checked?</summary>
+        <p>The chosen photo produced a JPEG data URL; its decoded image data was measured at 2,011 bytes, the dashboard displayed the saved image after reloading, and a separate test confirmed an item without a photo used the placeholder.</p>
+      </details>
+    </section>
+
+    <section class="panel run" aria-labelledby="run-title">
+      <h2 id="run-title">Run it again</h2>
+      <p>From the project root, run <code>npx --yes serve .</code> and open the local URL printed by the command, usually <code>http://localhost:3000</code>. Keep the server running. The app itself makes no external requests; internet may be needed the first time to download the local server tool.</p>
+      <p>Items persist for this browser and local address. This is not a hosted offline app, so localhost is unavailable while the local server is stopped.</p>
+    </section>
+
+    <footer>
+      <p>Code snapshot: commit <code>c2c5028</code>. This guide is a snapshot and may drift if the app changes; search the named code anchors in the current <code>index.html</code>.</p>
+      <p><a href="../index.html">Open the SabiStock app</a></p>
+    </footer>
+  </main>
+</body>
+</html>

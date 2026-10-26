@@ -29,7 +29,7 @@ Build mode: fast
   Learner check: Search for one item you added, search for a name that is not there, clear the search, then try saving with an empty name and with a blank quantity. Confirm the messages and that blank quantity creates a zero-stock item.
   Commit: `Add inventory search and validation`
 
-- [ ] **3. You can add and keep a small item photo**
+- [x] **3. You can add and keep a small item photo**
   Becomes usable: Owners can take or choose an optional photo, preview it, and save it with a compressed item thumbnail; items without photos retain the placeholder.
   Why now: Photos complete the specified add-item journey. Doing this after inventory and validation exist isolates image/storage risks and makes them easier to verify without delaying the restock kernel.
   PRD ref: `prd.md > Screens and Layout`, `prd.md > Features and Behavior > Add an item`, `prd.md > States and Boundaries > Return and offline use`
@@ -42,22 +42,22 @@ Build mode: fast
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 1; learner added an item, tried Sold -1 and Add +1, reloaded to confirm persistence, and reported no confusing parts or requested changes.
-- [ ] Final kick-the-tires exploration and feedback completed — after all slices, including search, validation, photos, and persistence.
+- [x] Final kick-the-tires exploration and feedback completed — learner tested items with and without photos, quantity actions, search/clear, invalid inputs, reload persistence, and offline use; reported no broken or confusing parts.
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — no changes requested; learner confirmed SabiStock is ready for demo.
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided photo-flow route; learner traced file selection, compression, storage, and rendering in `index.html` and connected it to the verified 300 × 150 JPEG thumbnail that persisted after reload.
+- [x] Optional edit and transfer reflection addressed — label edit declined; transfer reflection answered and recorded in the ignored learner profile.
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: Learner traced the photo-selection handler, `compressPhoto`, and form submit/storage/render path. The browser check produced a 300 × 150 JPEG (2,011 bytes) that remained after reload.
+Route and stops: `index.html` — `photoInput.addEventListener("change")`, `compressPhoto(file)`, form submit handler, `saveInventory()`, and `render()`.
+Edit outcome: Optional button-label edit declined.
+Reflection: Offered and answered; personal response recorded only in the ignored learner profile.
+Activity mode: Live app and editor.
 
 ## Revisions
