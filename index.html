@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fa">
+  <title>SabiStock — Know what to restock</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: #17212b;
+      background: #f5f7fa;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --ink: #17212b;
+      --muted: #687581;
+      --line: #e5eaf0;
+      --white: #fff;
+      --red: #c93636;
+      --red-soft: #fff0ef;
+      --yellow: #9b6800;
+      --yellow-soft: #fff7df;
+      --green: #26724d;
+      --green-soft: #eaf7ef;
+      --blue: #1769aa;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      background: #f5f7fa;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .page {
+      width: min(100%, 880px);
+      margin: 0 auto;
+      padding: 22px 18px 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border-radius: 14px;
+      background: #e7f2ff;
+      color: #1769aa;
+      font-size: 23px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 23px;
+      letter-spacing: -0.7px;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .summary {
+      margin: 0 0 16px;
+      padding: 16px 18px;
+      border: 1px solid #f2c9c6;
+      border-radius: 16px;
+      background: var(--red-soft);
+      color: #842121;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .summary strong { font-size: 22px; }
+
+    .panel {
+      margin-bottom: 18px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--white);
+      box-shadow: 0 4px 14px rgb(30 48 70 / 4%);
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-heading h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -0.3px;
+    }
+
+    .add-form {
+      display: grid;
+      grid-template-columns: minmax(160px, 1fr) 150px auto;
+      align-items: end;
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      color: #384654;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .field input {
+      width: 100%;
+      min-height: 48px;
+      padding: 11px 13px;
+      border: 1px solid #ced7e0;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: #5196d2;
+      box-shadow: 0 0 0 3px rgb(23 105 170 / 12%);
+    }
+
+    .button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 15px;
+      border: 0;
+      border-radius: 12px;
+      font-weight: 750;
+      transition: filter 120ms ease, transform 120ms ease;
+    }
+
+    .button:hover:not(:disabled) { filter: brightness(.96); }
+    .button:active:not(:disabled) { transform: translateY(1px); }
+    .button:focus-visible { outline: 3px solid #81b8e2; outline-offset: 2px; }
+    .button:disabled { cursor: not-allowed; opacity: .55; }
+    .button-primary { background: #1769aa; color: #fff; }
+    .button-sell { background: #fbe7e5; color: #9f2927; }
+    .button-add { background: #e8f3fb; color: #145d93; }
+
+    .message {
+      margin: 11px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .message.error {
+      color: #a82727;
+      font-weight: 700;
+    }
+
+    .bucket {
+      margin-top: 20px;
+    }
+
+    .bucket-heading {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .bucket-heading .count {
+      display: inline-grid;
+      min-width: 27px;
+      height: 25px;
+      place-items: center;
+      padding: 0 7px;
+      border-radius: 99px;
+      font-size: 12px;
+    }
+
+    .bucket-low .bucket-heading { color: var(--red); }
+    .bucket-low .count { background: var(--red-soft); }
+    .bucket-soon .bucket-heading { color: var(--yellow); }
+    .bucket-soon .count { background: var(--yellow-soft); }
+    .bucket-safe .bucket-heading { color: var(--green); }
+    .bucket-safe .count { background: var(--green-soft); }
+
+    .items {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item-card {
+      display: grid;
+      grid-template-columns: 54px minmax(100px, 1fr) auto;
+      align-items: center;
+      gap: 13px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #fff;
+    }
+
+    .item-card.out-of-stock {
+      border-color: #e9a8a4;
+      background: #ffebe9;
+    }
+
+    .item-photo {
+      display: grid;
+      width: 54px;
+      height: 54px;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #edf1f5;
+      color: #71808e;
+      font-size: 25px;
+    }
+
+    .item-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .item-name {
+      overflow-wrap: anywhere;
+      font-size: 15px;
+      font-weight: 750;
+    }
+
+    .item-quantity {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .out-of-stock .item-quantity,
+    .out-label { color: #a32222; font-weight: 800; }
+
+    .out-label {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 11px;
+      letter-spacing: .5px;
+    }
+
+    .item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .item-actions .button {
+      min-height: 43px;
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+
+    .bucket-empty {
+      padding: 13px 14px;
+      border: 1px dashed #dce3ea;
+      border-radius: 13px;
+      color: #7a8793;
+      font-size: 13px;
+    }
+
+    .empty-state {
+      padding: 22px 14px;
+      border: 1px dashed #d7e0e9;
+      border-radius: 15px;
+      color: #647381;
+      text-align: center;
+    }
+
+    .empty-state .icon { font-size: 30px; }
+    .empty-state p { margin: 8px 0 0; }
+
+    .storage-warning {
+      margin-bottom: 15px;
+      padding: 12px 14px;
+      border: 1px solid #e8b3b0;
+      border-radius: 12px;
+      background: #fff0ef;
+      color: #8d2422;
+      font-size: 14px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 620px) {
+      .page { padding: 17px 13px 36px; }
+      .topbar { margin-bottom: 16px; }
+      .brand h1 { font-size: 21px; }
+      .add-form { grid-template-columns: 1fr 1fr; }
+      .add-form .field:first-child { grid-column: 1 / -1; }
+      .add-form .button { grid-column: 1 / -1; width: 100%; }
+      .item-card { grid-template-columns: 48px minmax(80px, 1fr); gap: 10px; }
+      .item-photo { width: 48px; height: 48px; }
+      .item-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; }
+      .item-actions .button { min-height: 46px; }
+      .panel { padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">▦</div>
+        <div>
+          <h1>SabiStock</h1>
+          <p>Know what to restock today</p>
+        </div>
+      </div>
+    </header>
+
+    <div id="storage-warning" class="storage-warning" role="alert" hidden></div>
+
+    <p id="restock-summary" class="summary" aria-live="polite"></p>
+
+    <section class="panel" aria-labelledby="add-heading">
+      <div class="panel-heading">
+        <h2 id="add-heading">Add an item</h2>
+      </div>
+      <form id="add-form" class="add-form" novalidate>
+        <div class="field">
+          <label for="item-name">Item name</label>
+          <input id="item-name" name="name" type="text" placeholder="e.g. iPhone Charger" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="item-quantity">Quantity</label>
+          <input id="item-quantity" name="quantity" type="number" min="0" step="1" placeholder="0" inputmode="numeric">
+        </div>
+        <button id="save-item" class="button button-primary" type="submit">＋ Add Item</button>
+      </form>
+      <p id="form-message" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-label="Stock dashboard">
+      <div id="dashboard"></div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "sabistock_items";
+      const inventory = [];
+      const form = document.querySelector("#add-form");
+      const nameInput = document.querySelector("#item-name");
+      const quantityInput = document.querySelector("#item-quantity");
+      const formMessage = document.querySelector("#form-message");
+      const dashboard = document.querySelector("#dashboard");
+      const restockSummary = document.querySelector("#restock-summary");
+      const storageWarning = document.querySelector("#storage-warning");
+      const saveButton = document.querySelector("#save-item");
+      let storageAvailable = true;
+
+      function showStorageError(message) {
+        storageAvailable = false;
+        storageWarning.textContent = message;
+        storageWarning.hidden = false;
+        saveButton.disabled = true;
+      }
+
+      function isValidItem(item) {
+        return item
+          && typeof item.id === "string"
+          && typeof item.name === "string"
+          && Number.isInteger(item.quantity)
+          && item.quantity >= 0
+          && (item.photo === null || typeof item.photo === "string");
+      }
+
+      function loadInventory() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved === null) return;
+          const parsed = JSON.parse(saved);
+          if (!Array.isArray(parsed) || !parsed.every(isValidItem)) {
+            throw new Error("Saved inventory has an unexpected format.");
+          }
+          inventory.push(...parsed);
+        } catch (error) {
+          console.error("Could not load saved inventory:", error);
+          showStorageError("Saved inventory could not be read. Your browser data has not been changed. Please keep this page open and get help before clearing browser data.");
+        }
+      }
+
+      function saveInventory() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
+          return true;
+        } catch (error) {
+          console.error("Could not save inventory:", error);
+          storageWarning.textContent = "Could not save this change in your browser. Your last saved inventory is unchanged.";
+          storageWarning.hidden = false;
+          return false;
+        }
+      }
+
+      function makeElement(tagName, className, text) {
+        const element = document.createElement(tagName);
+        if (className) element.className = className;
+        if (text !== undefined) element.textContent = text;
+        return element;
+      }
+
+      function itemCard(item) {
+        const card = makeElement("article", `item-card${item.quantity === 0 ? " out-of-stock" : ""}`);
+        const photo = makeElement("div", "item-photo");
+        photo.setAttribute("aria-hidden", "true");
+        if (item.photo) {
+          const image = document.createElement("img");
+          image.src = item.photo;
+          image.alt = "";
+          photo.append(image);
+        } else {
+          photo.textContent = "▧";
+        }
+
+        const details = makeElement("div");
+        details.append(makeElement("div", "item-name", item.name));
+        details.append(makeElement("div", "item-quantity", `${item.quantity} left`));
+        if (item.quantity === 0) {
+          details.append(makeElement("div", "out-label", "OUT OF STOCK"));
+          details.append(makeElement("div", "message error", "Cannot sell at 0 - restock first"));
+        }
+
+        const actions = makeElement("div", "item-actions");
+        const sellButton = makeElement("button", "button button-sell", "− Sold 1");
+        sellButton.type = "button";
+        sellButton.disabled = item.quantity === 0 || !storageAvailable;
+        if (item.quantity === 0) {
+          sellButton.title = "Cannot sell at 0 - restock first";
+          sellButton.setAttribute("aria-label", `${item.name}: Cannot sell at 0 - restock first`);
+        }
+        sellButton.addEventListener("click", () => changeQuantity(item.id, -1));
+
+        const addButton = makeElement("button", "button button-add", "+ Add 1");
+        addButton.type = "button";
+        addButton.disabled = !storageAvailable;
+        addButton.addEventListener("click", () => changeQuantity(item.id, 1));
+        actions.append(sellButton, addButton);
+        card.append(photo, details, actions);
+        return card;
+      }
+
+      function renderBucket(container, title, className, items) {
+        const section = makeElement("section", `bucket ${className}`);
+        const heading = makeElement("h3", "bucket-heading");
+        heading.append(
+          document.createTextNode(title),
+          makeElement("span", "count", String(items.length))
+        );
+        heading.setAttribute("aria-label", `${title}, ${items.length} items`);
+        const list = makeElement("div", "items");
+        if (items.length === 0) {
+          list.append(makeElement("div", "bucket-empty", "No items in this group."));
+        } else {
+          items.forEach((item) => list.append(itemCard(item)));
+        }
+        section.append(heading, list);
+        container.append(section);
+      }
+
+      function render() {
+        const lowStock = inventory
+          .filter((item) => item.quantity < 5)
+          .sort((a, b) => a.quantity - b.quantity || a.name.localeCompare(b.name));
+        const outSoon = inventory
+          .filter((item) => item.quantity >= 5 && item.quantity < 10)
+          .sort((a, b) => a.quantity - b.quantity || a.name.localeCompare(b.name));
+        const safe = inventory
+          .filter((item) => item.quantity >= 10)
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        restockSummary.replaceChildren(
+          document.createTextNode("Need to restock: "),
+          makeElement("strong", "", String(lowStock.length)),
+          document.createTextNode(` ${lowStock.length === 1 ? "item" : "items"}`)
+        );
+        dashboard.replaceChildren();
+        if (inventory.length === 0) {
+          const empty = makeElement("div", "empty-state");
+          empty.append(makeElement("div", "icon", "📦"));
+          empty.append(makeElement("p", "", "No items tracked yet. Add your first item above to start."));
+          dashboard.append(empty);
+          return;
+        }
+
+        renderBucket(dashboard, "Low Stock · under 5", "bucket-low", lowStock);
+        renderBucket(dashboard, "Out Soon · 5–9", "bucket-soon", outSoon);
+        renderBucket(dashboard, "Safe · 10+", "bucket-safe", safe);
+      }
+
+      function changeQuantity(id, amount) {
+        if (!storageAvailable) return;
+        const item = inventory.find((entry) => entry.id === id);
+        if (!item || (amount < 0 && item.quantity === 0)) return;
+        item.quantity += amount;
+        if (!saveInventory()) {
+          item.quantity -= amount;
+          return;
+        }
+        storageWarning.hidden = true;
+        render();
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!storageAvailable) return;
+        const name = nameInput.value.trim();
+        const quantityText = quantityInput.value.trim();
+        const quantity = quantityText === "" ? 0 : Number(quantityText);
+        if (!name || !Number.isInteger(quantity) || quantity < 0) {
+          formMessage.textContent = "Enter an item name and a whole-number quantity of 0 or more.";
+          formMessage.className = "message error";
+          return;
+        }
+
+        const item = {
+          id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          name,
+          quantity,
+          photo: null
+        };
+        inventory.push(item);
+        if (!saveInventory()) {
+          inventory.pop();
+          return;
+        }
+        form.reset();
+        formMessage.textContent = "Item saved.";
+        formMessage.className = "message";
+        storageWarning.hidden = true;
+        render();
+      });
+
+      loadInventory();
+      render();
+    })();
+  </script>
+</body>
+</html>
